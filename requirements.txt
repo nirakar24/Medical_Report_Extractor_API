@@ -1,0 +1,14 @@
+django>=5.2.4
+djangorestframework
+django-cors-headers
+gunicorn
+python-doctr
+rapidfuzz
+pillow
+numpy
+scipy
+opencv-python
+PyYAML
+pdfplumber
+requests
+python-dotenv 
