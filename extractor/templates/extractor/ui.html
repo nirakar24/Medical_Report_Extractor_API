@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Report Extractor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        .container { max-width: 600px; margin: auto; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+        .error { color: red; }
+        .loading { color: #888; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Medical Report Extractor</h2>
+    <form id="extract-form">
+        <label>Upload CBC Report (Image or PDF):<br>
+            <input type="file" name="file" id="file-input" accept="image/*,application/pdf" required>
+        </label><br><br>
+        <label>Report Type:
+            <select name="report_type" id="report-type">
+                <option value="cbc">CBC</option>
+                <option value="lft">LFT</option>
+                <!-- Add more types in future -->
+            </select>
+        </label><br><br>
+        <button type="submit">Extract</button>
+    </form>
+    <div id="status"></div>
+    <div id="results"></div>
+</div>
+<script>
+const form = document.getElementById('extract-form');
+const statusDiv = document.getElementById('status');
+const resultsDiv = document.getElementById('results');
+form.onsubmit = async function(e) {
+    e.preventDefault();
+    statusDiv.textContent = '';
+    resultsDiv.innerHTML = '';
+    const fileInput = document.getElementById('file-input');
+    const reportType = document.getElementById('report-type').value;
+    if (!fileInput.files.length) {
+        statusDiv.textContent = 'Please select a file.';
+        return;
+    }
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('report_type', reportType);
+    statusDiv.textContent = 'Extracting...';
+    statusDiv.className = 'loading';
+    try {
+        const resp = await fetch('/extract/', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await resp.json();
+        statusDiv.textContent = '';
+        if (Array.isArray(data) && data.length > 0 && data[0].parameter) {
+            let html = '<table><thead><tr><th>Parameter</th><th>Value</th><th>Unit</th><th>Range</th></tr></thead><tbody>';
+            for (const row of data) {
+                html += `<tr><td>${row.parameter}</td><td>${row.value}</td><td>${row.unit}</td><td>${row.range}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            resultsDiv.innerHTML = html;
+        } else if (data.error) {
+            resultsDiv.innerHTML = `<div class="error">${data.error}</div>`;
+        } else {
+            resultsDiv.innerHTML = '<div class="error">No parameters extracted.</div>';
+        }
+    } catch (err) {
+        statusDiv.textContent = '';
+        resultsDiv.innerHTML = `<div class="error">Error: ${err}</div>`;
+    }
+};
+</script>
+</body>
+</html> 
