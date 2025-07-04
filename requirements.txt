@@ -2,6 +2,7 @@ django>=5.2.4
 djangorestframework
 django-cors-headers
 gunicorn
+torch
 python-doctr
 rapidfuzz
 pillow
