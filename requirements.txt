@@ -3,6 +3,7 @@ djangorestframework
 django-cors-headers
 gunicorn
 torch
+torchvision
 python-doctr
 rapidfuzz
 pillow
